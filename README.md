@@ -54,6 +54,8 @@ I wrote a [**comprehensive VBA script**](https://github.com/kirk-allen-ryan/Ente
    <img width="780" height="227" alt="image" src="https://github.com/user-attachments/assets/d2471a24-3ac9-424c-b9ee-c39f2c53772b" />
 
 2.  **Automated Distribution:** Instead of one person manually sorting rows, the script parses the data and distributes individual queues to the **20+ therapists** via Outlook.
+   <img width="1519" height="203" alt="image" src="https://github.com/user-attachments/assets/ade0af23-14ba-42be-8827-dc48f631c301" />
+
 3.  **Revenue Integrity Master DB:** The script maintains a master database to track escalated problems and ensure that duplicate alerts aren't re-sent, preventing "notification fatigue."
 <img width="1591" height="600" alt="image" src="https://github.com/user-attachments/assets/7d35433c-0c3f-407b-ad2d-697e3a739d1c" />
 
