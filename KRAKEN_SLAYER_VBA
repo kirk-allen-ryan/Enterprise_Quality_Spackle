@@ -1,0 +1,1467 @@
+Function GetSheetName(fullName As String, role As String) As String
+    Dim lastName As String
+    lastName = Split(fullName, " ")(0)
+    GetSheetName = GetValidSheetName(lastName & "_" & role)
+End Function
+
+Sub OpenPOCAuditAndAddTables()
+    Dim wb As Workbook
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    Dim lastRow, lastCol, i As Long
+    Dim masterWB As Workbook
+    Dim staffKeyTbl, masterTbl As ListObject
+    Dim found As Range
+    Dim fin, name, flag, responsiblePerson, admitDate, discipline, lastApptType, newName, filePath As String
+    Dim apptTbl, chargeTbl As ListObject
+    Dim apptRow, ceRow, newRow, mainRow As ListRow
+    Dim lastCETbl, mainTbl As ListObject
+    Dim lastceRow As ListRow
+    Dim startTime, endTime As Double
+    Dim autoDischarge, anyFlag As Boolean
+    Dim apptDate, dateValue, chargeDate, today As Date
+    Dim cellValue As Variant
+    Dim daysDifference As Long
+
+    On Error GoTo ErrorHandler
+    
+    Application.ScreenUpdating = False
+    
+    Set masterWB = ThisWorkbook
+    Set staffKeyTbl = masterWB.Worksheets("Staff_Key").ListObjects("StaffKey")
+    Set masterTbl = masterWB.Worksheets("Flag_Master").ListObjects("master")
+    ' Set the file path
+    filePath = Environ("USERPROFILE") & "\Downloads\POC_Audit_Advanced_2025.xlsx"
+
+    ' Check if the file exists
+    If Dir(filePath) = "" Then
+        MsgBox "File 'POC Audit Advanced 2025.xlsx' not found in Downloads folder.", vbExclamation
+        Exit Sub
+    End If
+    
+    MsgBox "I found your latest Rehab Audit Report - this normally takes about 2 minutes...get some coffee!"
+    
+    startTime = Timer
+
+    ' Open the workbook
+    Set wb = Workbooks.Open(filePath)
+
+    ' Add tables to specific sheets with specific names
+    ' Sheet 3 (position 3), header starts at A15, table name 'main'
+    Set ws = wb.Worksheets(3)
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    lastCol = ws.Cells(15, ws.Columns.Count).End(xlToLeft).Column
+    Set tbl = ws.ListObjects.Add(xlSrcRange, ws.Range(ws.Cells(15, 1), ws.Cells(lastRow, lastCol)), , xlYes)
+    tbl.name = "main"
+
+    ' Sheet 4 (position 4), header starts at A4, table name 'POC'
+    Set ws = wb.Worksheets(4)
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    lastCol = ws.Cells(4, ws.Columns.Count).End(xlToLeft).Column
+    Set tbl = ws.ListObjects.Add(xlSrcRange, ws.Range(ws.Cells(4, 1), ws.Cells(lastRow, lastCol)), , xlYes)
+    tbl.name = "POC"
+
+    ' Sheet 6 (position 6), header starts at A2, table name 'Appts'
+    Set ws = wb.Worksheets(6)
+    lastRow = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
+    lastCol = ws.Cells(2, ws.Columns.Count).End(xlToLeft).Column
+    Set tbl = ws.ListObjects.Add(xlSrcRange, ws.Range(ws.Cells(2, 2), ws.Cells(lastRow, lastCol)), , xlYes)
+    tbl.name = "appts"
+    
+    tbl.ListColumns.Add
+    tbl.ListColumns(tbl.ListColumns.Count).name = "Discipline"
+
+    ' Populate the discipline filter column
+    For Each apptRow In tbl.ListRows
+        discipline = ""
+        If InStr(1, apptRow.Range(1, 3).value, " PT ", vbTextCompare) > 0 Then
+            discipline = "PT"
+        ElseIf InStr(1, apptRow.Range(1, 3).value, " OT ", vbTextCompare) > 0 Then
+            discipline = "OT"
+        ElseIf InStr(1, apptRow.Range(1, 3).value, " SLP ", vbTextCompare) > 0 Then
+            discipline = "SLP"
+        End If
+        apptRow.Range(1, 6).value = discipline
+    Next apptRow
+    
+    tbl.Sort.SortFields.Clear
+    tbl.Sort.SortFields.Add key:=tbl.ListColumns(1).Range, SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+    tbl.Sort.SortFields.Add key:=tbl.ListColumns(2).Range, SortOn:=xlSortOnValues, Order:=xlDescending, DataOption:=xlSortNormal
+    With tbl.Sort
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+
+    ' Sheet 7 (position 7), header starts at B2, table name 'Last_CE'
+    Set ws = wb.Worksheets(7)
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    lastCol = ws.Cells(4, ws.Columns.Count).End(xlToLeft).Column
+    Set tbl = ws.ListObjects.Add(xlSrcRange, ws.Range(ws.Cells(4, 1), ws.Cells(lastRow, lastCol)), , xlYes)
+    tbl.name = "Last_CE"
+    
+    tbl.ListColumns.Add
+    tbl.ListColumns(tbl.ListColumns.Count).name = "Discipline"
+    
+    For Each ceRow In tbl.ListRows
+        discipline = ""
+        If ceRow.Range(1, 4).value = "Physical Therapist" Then
+            discipline = "PT"
+        ElseIf ceRow.Range(1, 4).value = "Rehab Director" Then
+            discipline = "PT"
+        ElseIf ceRow.Range(1, 4).value = "Occupational Therapist" Then
+            discipline = "OT"
+        ElseIf ceRow.Range(1, 4).value = "Speech Language Pathologist" Then
+            discipline = "SLP"
+        End If
+        ceRow.Range(1, 8).value = discipline
+    Next ceRow
+
+    ' Sheet 8 (position 8), header starts at B2, table name 'charges'
+    Set ws = wb.Worksheets(8)
+    lastRow = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
+    lastCol = ws.Cells(4, ws.Columns.Count).End(xlToLeft).Column
+    Set tbl = ws.ListObjects.Add(xlSrcRange, ws.Range(ws.Cells(4, 2), ws.Cells(lastRow, lastCol)), , xlYes)
+    tbl.name = "charges"
+    
+        tbl.Sort.SortFields.Clear
+    tbl.Sort.SortFields.Add key:=tbl.ListColumns(1).Range, SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+    tbl.Sort.SortFields.Add key:=tbl.ListColumns(2).Range, SortOn:=xlSortOnValues, Order:=xlDescending, DataOption:=xlSortNormal
+    With tbl.Sort
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+
+
+
+    ' Hide sheet 5 (position 5)
+    wb.Worksheets(5).Visible = xlSheetVeryHidden
+    
+ ' Check for new names in appts column-5
+    Set ws = wb.Worksheets(6)
+    For Each tbl In ws.ListObjects
+        For Each cell In tbl.ListColumns(5).dataBodyRange
+            newName = cell.value
+            If newName <> "" Then
+                Set found = staffKeyTbl.ListColumns(1).dataBodyRange.Find(newName, LookIn:=xlValues, LookAt:=xlWhole)
+                If found Is Nothing Then
+                    With staffKeyTbl.ListRows.Add
+                        .Range(1, 1).value = newName
+                        .Range(1, 4).value = "PENDING"
+                    End With
+                End If
+            End If
+        Next cell
+    Next tbl
+
+
+    ' Check for new names in Last_CE column-3
+    Set ws = wb.Worksheets(7)
+    For Each tbl In ws.ListObjects
+        For Each cell In tbl.ListColumns(3).dataBodyRange
+            newName = cell.value
+            If newName <> "" Then
+                Set found = staffKeyTbl.ListColumns(1).dataBodyRange.Find(newName, LookIn:=xlValues, LookAt:=xlWhole)
+                If found Is Nothing Then
+                    With staffKeyTbl.ListRows.Add
+                        .Range(1, 1).value = newName
+                        .Range(1, 4).value = "PENDING"
+                    End With
+                End If
+            End If
+        Next cell
+    Next tbl
+    
+
+
+Set mainTbl = wb.Worksheets(3).ListObjects("main")
+Set apptTbl = wb.Worksheets(6).ListObjects("appts")
+Set chargeTbl = wb.Worksheets(8).ListObjects("charges")
+
+For Each mainRow In mainTbl.ListRows
+    ' Save the values from column-1 (admit date), column-2 (FIN), and column-5 (Name)
+    admitDate = mainRow.Range(1, 1).value
+    fin = mainRow.Range(1, 2).value
+    name = mainRow.Range(1, 5).value
+    anyFlag = False
+
+    ' Initialize the flag variable
+    flag = ""
+
+    ' Check for flagging conditions
+    If mainRow.Range(1, 4).Interior.Color = RGB(255, 156, 156) Then
+        flag = "Wrong Service Category"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 12).value = Now
+    End If
+
+    ' Add more flagging conditions as needed
+    ' Example:
+    If mainRow.Range(1, 8).Interior.Color = RGB(255, 0, 0) Then
+        flag = "Note Missing"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If mainRow.Range(1, 10).Interior.Color = RGB(255, 255, 206) Then
+        flag = "POC documentation D/T missing"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "OT"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If mainRow.Range(1, 10).Interior.Color = RGB(49, 199, 198) Then
+        flag = "The POC START " & mainRow.Range(1, 13).value & " is 3+ days BEFORE the POC doc-date"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "OT"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If (mainRow.Range(1, 12).Font.Color = RGB(255, 0, 0) Or mainRow.Range(1, 15).Font.Color = RGB(255, 0, 0)) Then
+        flag = "POC Not Forwarded"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "OT"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If mainRow.Range(1, 14).Font.Color = RGB(255, 0, 0) Then
+        cellValue = mainRow.Range(1, 14).value
+        dateValue = CDate(cellValue)
+        daysDifference = DateDiff("d", dateValue, Date)
+        flag = "POC Stop-date passed " & daysDifference & " days ago"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "OT"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If mainRow.Range(1, 15).Interior.Color = RGB(255, 255, 0) And mainRow.Range(1, 2).Font.Color = RGB(0, 0, 255) Then
+        flag = "POC NOT Signed"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "OT"
+        newRow.Range(1, 12).value = Now
+    End If
+      
+    If mainRow.Range(1, 16).value <> "" And mainRow.Range(1, 9).Interior.Color = RGB(148, 199, 255) Then
+        flag = "DC summary / EO: (" & mainRow.Range(1, 16).value & ") - DISCHARGE?"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "OT"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    '***********************************************
+    
+    If mainRow.Range(1, 17).Interior.Color = RGB(255, 255, 206) Then
+        flag = "POC documentation D/T missing"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "PT"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If mainRow.Range(1, 17).Interior.Color = RGB(49, 199, 198) Then
+        flag = "The POC START " & mainRow.Range(1, 20).value & " is 3+ days BEFORE the POC doc-date"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "PT"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If (mainRow.Range(1, 19).Font.Color = RGB(255, 0, 0) Or mainRow.Range(1, 22).Font.Color = RGB(255, 0, 0)) Then
+        flag = "POC Not Forwarded"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "PT"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If mainRow.Range(1, 21).Interior.Color = RGB(255, 0, 0) Then
+        cellValue = mainRow.Range(1, 21).value
+        dateValue = CDate(cellValue)
+        daysDifference = DateDiff("d", dateValue, Date)
+        flag = "POC Stop-date passed " & daysDifference & " days ago"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "PT"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If mainRow.Range(1, 22).Interior.Color = RGB(255, 255, 0) And mainRow.Range(1, 2).Font.Color = RGB(0, 0, 255) Then
+        flag = "POC NOT Signed"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "PT"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If mainRow.Range(1, 23).value <> "" And mainRow.Range(1, 9).Interior.Color = RGB(148, 199, 255) Then
+        flag = "DC summary / EO: (" & mainRow.Range(1, 23).value & ") - DISCHARGE?"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "PT"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    '*******************************************
+   If mainRow.Range(1, 24).Interior.Color = RGB(255, 255, 206) Then
+        flag = "POC documentation D/T missing"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "SLP"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If mainRow.Range(1, 24).Interior.Color = RGB(49, 199, 198) Then
+        flag = "The POC START " & mainRow.Range(1, 27).value & " is 3+ days BEFORE the POC doc-date"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "SLP"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If (mainRow.Range(1, 26).Font.Color = RGB(255, 0, 0) Or mainRow.Range(1, 29).Font.Color = RGB(255, 0, 0)) Then
+        flag = "POC Not Forwarded"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "SLP"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If mainRow.Range(1, 28).Interior.Color = RGB(255, 0, 0) Then
+        cellValue = mainRow.Range(1, 28).value
+        dateValue = CDate(cellValue)
+        daysDifference = DateDiff("d", dateValue, Date)
+        flag = "POC Stop-date passed " & daysDifference & " days ago"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "SLP"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    If mainRow.Range(1, 29).Interior.Color = RGB(255, 255, 0) And mainRow.Range(1, 2).Font.Color = RGB(0, 0, 255) Then
+        flag = "POC NOT Signed"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "SLP"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+    
+    If mainRow.Range(1, 30).value <> "" And mainRow.Range(1, 9).Interior.Color = RGB(148, 199, 255) Then
+        flag = "DC summary / EO: (" & mainRow.Range(1, 30).value & ") - DISCHARGE?"
+        anyFlag = True
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = "SLP"
+        newRow.Range(1, 12).value = Now
+    End If
+    
+        If anyFlag = False Then
+        flag = "No Flag"
+        Set newRow = masterTbl.ListRows.Add
+        newRow.Range(1, 4).value = admitDate
+        newRow.Range(1, 1).value = fin
+        newRow.Range(1, 2).value = name
+        newRow.Range(1, 10).value = flag
+        newRow.Range(1, 3).value = ""
+        newRow.Range(1, 12).value = Now
+    End If
+
+        
+    
+    Next mainRow
+        
+    Call CompleteMasterRows
+    Call imputeDiscipline
+    Call imputeLastCE
+    Call removeDuplicates
+    Call updateInactiveOwners
+    Call updateStatus
+    Call removeOldHoldRows
+    Call markResolvedFINs
+    Call SendDistributionLists
+    
+    Sheets("Flag_Master").Select
+    Range("B3").Select
+    Range(Selection, Selection.End(xlDown)).Select
+    With Selection
+        .VerticalAlignment = xlCenter
+        .Orientation = 0
+        .AddIndent = False
+        .IndentLevel = 1
+        .ShrinkToFit = False
+        .ReadingOrder = xlContext
+        .MergeCells = False
+    End With
+    Columns("L:N").Select
+    With Selection
+        .VerticalAlignment = xlCenter
+        .WrapText = False
+        .Orientation = 0
+        .AddIndent = False
+        .IndentLevel = 0
+        .ShrinkToFit = False
+        .ReadingOrder = xlContext
+        .MergeCells = False
+    End With
+    Columns("O:P").Select
+    With Selection
+        .VerticalAlignment = xlCenter
+        .WrapText = False
+        .Orientation = 0
+        .AddIndent = False
+        .IndentLevel = 0
+        .ShrinkToFit = False
+        .ReadingOrder = xlContext
+        .MergeCells = False
+    End With
+    Sheets("Staff_Key").Select
+    Range("A1").Select
+    
+    endTime = Timer
+    elapsedTime = endTime - startTime
+    MsgBox "Elapsed Time: " & elapsedTime
+    
+    Application.ScreenUpdating = True
+        
+        Exit Sub
+    
+ErrorHandler:
+        MsgBox "An error occurred: " & Err.Description, vbCritical    
+   
+End Sub
+
+Sub CompleteMasterRows()
+
+Dim masterWB, sourceWB As Workbook
+Dim masterWS, apptWS, chargesWS, lastceWS As Worksheet
+Dim masterTbl, apptTbl, chgTbl, lastCETbl As ListObject
+Dim sourceRow, masterRow As ListRow
+Dim sourceCol, masterCol As ListColumn
+Dim fin As String
+Dim apptDate As Date
+Dim chgDate As Date
+Dim today As Date
+Dim condition1, condition2 As Boolean
+Dim discipline As String
+Dim lastApptType As String
+Dim lastApptDate As Date
+Dim apptCount As Integer
+Dim nextApptDate As Date
+Dim owner As String
+Dim nextPTtype As String
+Dim nextOTtype As String
+Dim nextSLPtype As String
+Dim nextPT As String
+Dim nextOT As String
+Dim nextSLP As String
+Dim nextPTappt As String
+Dim nextOTappt As String
+Dim nextSLPappt As String
+Dim nextPTapptDate As Date
+Dim nextOTapptDate As Date
+Dim nextSLPapptDate As Date
+
+Dim nextApptDetails As String
+Dim nextPTdetails As String
+Dim nextOTdetails As String
+Dim nextSLPdetails As String
+
+Set masterWB = ThisWorkbook
+Set sourceWB = Workbooks("POC_Audit_Advanced_2025.xlsx")
+
+Set masterWS = masterWB.Sheets("Flag_Master")
+Set apptWS = sourceWB.Sheets("Appts")
+Set chargesWS = sourceWB.Sheets("Charges")
+Set lastceWS = sourceWB.Sheets("Last_CE")
+
+' Set tables
+Set masterTbl = masterWS.ListObjects("master")
+Set apptTbl = apptWS.ListObjects("appts")
+Set chgTbl = chargesWS.ListObjects("charges")
+Set lastCETbl = lastceWS.ListObjects("Last_CE")
+
+' Convert FIN column in apptTbl to numbers
+With apptTbl.ListColumns("Financial Number").dataBodyRange
+    .NumberFormat = "0"
+    .value = .value
+End With
+
+' Convert FIN column in chgTbl to numbers
+With chgTbl.ListColumns("Financial Number").dataBodyRange
+    .NumberFormat = "0"
+    .value = .value
+End With
+
+With lastCETbl.ListColumns("Financial Number").dataBodyRange
+    .NumberFormat = "0"
+    .value = .value
+End With
+
+today = Date
+
+' Loop through each row in the master table********************
+
+For Each masterRow In masterTbl.ListRows
+
+    If masterRow.Range(1, 8).value <> "" Then
+        GoTo NextMasterRow
+    End If
+    
+    
+    fin = masterRow.Range(1).value
+    condition1 = True
+    condition2 = True
+    discipline = masterRow.Range(3).value
+    lastApptType = ""
+    lastApptDate = 0
+    apptCount = 0
+    nextApptDate = 0
+    owner = ""
+    
+    ' Check condition 1 in apptTbl
+    For Each sourceRow In apptTbl.ListRows
+        If sourceRow.Range(1).value = fin Then
+            apptDate = sourceRow.Range(2).value
+            If sourceRow.Range(4).value = "Confirmed" And apptDate > today Then
+                condition1 = False
+                Exit For
+            End If
+        End If
+    Next sourceRow
+    
+    ' Check condition 2 in chgTbl
+    For Each sourceRow In chgTbl.ListRows
+        If sourceRow.Range(1).value = fin Then
+            chgDate = sourceRow.Range(2).value
+            If chgDate >= today - 45 Then
+                condition2 = False
+                Exit For
+            End If
+        End If
+    
+        
+    Next sourceRow
+    
+    
+    '**********************************************
+    
+    ' Update 'AUTO DC?' column if both conditions are met
+    If condition1 And condition2 Then
+        masterRow.Range(5).value = "X"
+    End If
+    
+    '**********************************************
+    
+
+    ' Populate 'LAST APPT TYPE', 'LAST APPT DATE', 'SEEN ONCE', 'NEXT APPT', and 'OWNER'****************
+    
+    For Each sourceRow In apptTbl.ListRows
+        If sourceRow.Range(1).value = fin Then
+            ' Skip rows where the owner is blank
+            If sourceRow.Range(5).value <> "" Then
+                apptCount = apptCount + 1
+                
+                ' Check for last appointment type and date
+                If sourceRow.Range(2).value < today And (sourceRow.Range(4).value = "Checked Out" Or sourceRow.Range(4).value = "Checked In") Then
+                    If discipline = "" Or sourceRow.Range(6).value = discipline Then
+                        lastApptType = sourceRow.Range(3).value
+                        lastApptDate = sourceRow.Range(2).value
+                    End If
+                End If
+            
+                
+                ' Check for next appointment date
+                If sourceRow.Range(2).value > today Then
+                    If nextApptDate = 0 Or sourceRow.Range(2).value < nextApptDate Then
+                        nextApptDate = sourceRow.Range(2).value
+                    End If
+                End If
+    
+            
+            ' Check for owner
+            If sourceRow.Range(1).value = fin Then
+                If discipline = "" Then
+                    owner = "Manager"
+                ElseIf sourceRow.Range(6).value = discipline Then
+                    If CDate(sourceRow.Range(2).value) < today And (sourceRow.Range(4).value = "Checked Out" Or sourceRow.Range(4).value = "Checked In") Then
+                        owner = sourceRow.Range(5).value
+                    End If
+                End If
+            End If
+            
+            End If
+        End If
+    Next sourceRow
+
+        
+        nextPTtype = "None": nextPT = "": nextPTappt = ""
+        nextOTtype = "None": nextOT = "": nextOTappt = ""
+        nextSLPtype = "None": nextSLP = "": nextSLPappt = ""      
+        
+    nextPTapptDate = 0
+    nextOTapptDate = 0
+    nextSLPapptDate = 0
+        
+    ' Loop through appointments
+    For Each sourceRow In apptTbl.ListRows
+        If sourceRow.Range(1).value = fin And sourceRow.Range(4).value = "Confirmed" And CDate(sourceRow.Range(2).value) > today Then
+            Select Case sourceRow.Range(6).value ' Assuming column 6 is the discipline
+                Case "PT"
+                
+                    If nextPTappt = "" Then
+                        nextPTappt = sourceRow.Range(2).value
+                        nextPTtype = sourceRow.Range(3).value
+                        nextPT = sourceRow.Range(5).value
+                    ElseIf CDate(sourceRow.Range(2).value) < CDate(nextPTappt) Then
+                        nextPTtype = sourceRow.Range(3).value
+                        nextPT = sourceRow.Range(5).value
+                        nextPTappt = sourceRow.Range(2).value
+                    End If
+                    
+                Case "OT"
+                
+                    If nextOTappt = "" Then
+                        nextOTappt = sourceRow.Range(2).value
+                        nextOTtype = sourceRow.Range(3).value
+                        nextOT = sourceRow.Range(5).value
+                    ElseIf CDate(sourceRow.Range(2).value) < CDate(nextOTappt) Then
+                        nextOTtype = sourceRow.Range(3).value
+                        nextOT = sourceRow.Range(5).value
+                        nextOTappt = sourceRow.Range(2).value
+                    End If
+                    
+                Case "SLP"
+                
+                    If nextSLPappt = "" Then
+                        nextSLPappt = sourceRow.Range(2).value
+                        nextSLPtype = sourceRow.Range(3).value
+                        nextSLP = sourceRow.Range(5).value
+                    ElseIf CDate(sourceRow.Range(2).value) < CDate(nextSLPappt) Then
+                        nextSLPtype = sourceRow.Range(3).value
+                        nextSLP = sourceRow.Range(5).value
+                        nextSLPappt = sourceRow.Range(2).value
+                    End If
+                    
+            End Select
+        End If
+    Next sourceRow
+    
+    nextApptDetails = ""
+    
+    nextPTdetails = ""
+    nextOTdetails = ""
+    nextSLPdetails = ""
+    
+        If nextPTtype <> "None" Then
+            nextPTdetails = "Next PT:  " & nextPTtype & " with " & nextPT & " @ " & nextPTappt
+        Else
+            nextPTdetails = "Next PT:  " & nextPTtype
+        End If
+        
+        If nextOTtype <> "None" Then
+            nextOTdetails = "Next OT:  " & nextOTtype & " with " & nextOT & " @ " & nextOTappt
+        Else
+            nextOTdetails = "Next OT:  " & nextOTtype
+        End If
+        
+        If nextSLPtype <> "None" Then
+            nextSLPdetails = "Next SLP: " & nextSLPtype & " with " & nextSLP & " @ " & nextSLPappt
+        Else
+            nextSLPdetails = "Next SLP: " & nextSLPtype
+        End If
+    
+    
+    nextApptDetails = nextPTdetails & vbCrLf & nextOTdetails & vbCrLf & nextSLPdetails
+    
+        
+        ' Update master table with the gathered data******************************
+        
+        If lastApptType <> "" Then
+            masterRow.Range(6).value = lastApptType
+            masterRow.Range(8).value = lastApptDate
+        Else
+            masterRow.Range(6).value = "Not Found"
+            masterRow.Range(8).value = "Not Found"
+        End If
+        
+        If apptCount = 1 Then
+            masterRow.Range(7).value = "X"
+        End If
+        
+        masterRow.Range(9).value = nextApptDetails
+        
+        If owner <> "" Then
+            masterRow.Range(11).value = owner
+        Else
+            masterRow.Range(11).value = "Manager"
+        End If
+        
+        '************************************************************************
+    
+NextMasterRow:
+Next masterRow
+
+End Sub
+
+Sub imputeDiscipline()
+
+    Dim masterWB, sourceWB As Workbook
+    Dim masterWS, apptWS, chargesWS, lastceWS As Worksheet
+    Dim masterTbl, apptTbl, chgTbl, lastCETbl As ListObject
+    Dim sourceRow, masterRow As ListRow
+    Dim lastApptType As String
+    Dim discipline As String
+    Dim owner As String
+    Dim fin As String
+    Dim lastApptDate As String
+
+    ' Set workbooks and worksheets
+    Set masterWB = ThisWorkbook
+    Set sourceWB = Workbooks("POC_Audit_Advanced_2025.xlsx")
+
+    Set masterWS = masterWB.Sheets("Flag_Master")
+    Set apptWS = sourceWB.Sheets("Appts")
+    Set chargesWS = sourceWB.Sheets("Charges")
+    Set lastceWS = sourceWB.Sheets("Last_CE")
+
+    ' Set tables
+    Set masterTbl = masterWS.ListObjects("master")
+    Set apptTbl = apptWS.ListObjects("appts")
+    Set chgTbl = chargesWS.ListObjects("charges")
+    Set lastCETbl = lastceWS.ListObjects("Last_CE")
+
+    ' Loop through each row in the master table
+    For Each masterRow In masterTbl.ListRows
+    
+        If masterRow.Range(1, 16).value <> "" Then
+            Exit For
+        End If
+        
+        
+        ' Check if discipline (column 3) is blank and last appointment type (column 6) is not "Not Found"
+        If masterRow.Range(1, 3).value = "" And masterRow.Range(1, 6).value <> "Not Found" Then
+            lastApptType = masterRow.Range(1, 6).value
+            discipline = ""
+            
+            ' Parse the last appointment type to determine the discipline
+            If InStr(1, lastApptType, " PT ", vbTextCompare) > 0 Then
+                discipline = "PT"
+            ElseIf InStr(1, lastApptType, " OT ", vbTextCompare) > 0 Then
+                discipline = "OT"
+            ElseIf InStr(1, lastApptType, " SLP ", vbTextCompare) > 0 Then
+                discipline = "SLP"
+            End If
+            
+            ' Update the discipline in column 3
+            masterRow.Range(1, 3).value = discipline
+        End If
+        
+        ' Cleanup operation to find the correct owner
+        If masterRow.Range(1, 11).value = "Manager" Then
+            fin = masterRow.Range(1).value
+            lastApptDate = masterRow.Range(1, 8).value
+            lastApptType = masterRow.Range(1, 6).value
+            owner = "Manager"
+            
+            ' Loop through the appointments to find the correct owner
+            For Each sourceRow In apptTbl.ListRows
+                If sourceRow.Range(1).value = fin And sourceRow.Range(2).value = lastApptDate And sourceRow.Range(3).value = lastApptType Then
+                    owner = sourceRow.Range(5).value
+                    Exit For
+                End If
+            Next sourceRow
+            
+            ' Update the owner in column 11
+            masterRow.Range(1, 11).value = owner
+        End If
+    Next masterRow
+
+End Sub
+
+
+Sub imputeLastCE()
+
+    Dim masterWB, sourceWB As Workbook
+    Dim masterWS, apptWS, chargesWS, lastceWS As Worksheet
+    Dim masterTbl, apptTbl, chgTbl, lastCETbl As ListObject
+    Dim sourceRow, masterRow As ListRow
+    Dim discipline As String
+    Dim owner As String
+    Dim fin As String
+
+    ' Set workbooks and worksheets
+    Set masterWB = ThisWorkbook
+    Set sourceWB = Workbooks("POC_Audit_Advanced_2025.xlsx")
+
+    Set masterWS = masterWB.Sheets("Flag_Master")
+    Set apptWS = sourceWB.Sheets("Appts")
+    Set chargesWS = sourceWB.Sheets("Charges")
+    Set lastceWS = sourceWB.Sheets("Last_CE")
+
+    ' Set tables
+    Set masterTbl = masterWS.ListObjects("master")
+    Set apptTbl = apptWS.ListObjects("appts")
+    Set chgTbl = chargesWS.ListObjects("charges")
+    Set lastCETbl = lastceWS.ListObjects("Last_CE")
+
+    ' Loop through each row in the master table
+    For Each masterRow In masterTbl.ListRows
+    
+    
+        If masterRow.Range(1, 16).value <> "" Then
+            Exit For
+        End If
+        
+        
+        ' Check if discipline (column 3) is present and owner (column 11) is "Manager"
+        If masterRow.Range(1, 3).value <> "" And masterRow.Range(1, 11).value = "Manager" Then
+            fin = masterRow.Range(1).value
+            discipline = masterRow.Range(1, 3).value
+            owner = "Manager"
+            
+            ' Loop through the lastCE table to find the correct owner
+            For Each sourceRow In lastCETbl.ListRows
+                If sourceRow.Range(1).value = fin And sourceRow.Range(8).value = discipline Then
+                    owner = sourceRow.Range(3).value
+                    Exit For
+                End If
+            Next sourceRow
+            
+            ' Update the owner in column 11
+            masterRow.Range(1, 11).value = owner
+        End If
+    Next masterRow
+
+End Sub
+Sub removeDuplicates()
+
+    Dim masterWB As Workbook
+    Dim masterWS As Worksheet
+    Dim masterTbl As ListObject
+    Dim masterRow As ListRow
+    Dim checkString As String
+    Dim uniqueKeys As Object
+    Dim i, j As Long
+    Dim statusCount As Long
+    Dim deleteCount As Long
+    Dim masterRowCount As Long
+
+    ' Set workbook and worksheet
+    Set masterWB = ThisWorkbook
+    Set masterWS = masterWB.Sheets("Flag_Master")
+    If masterWS Is Nothing Then
+        MsgBox "Worksheet 'Flag_Master' not found."
+        Exit Sub
+    End If
+
+    ' Set table
+    Set masterTbl = masterWS.ListObjects("master")
+    If masterTbl Is Nothing Then
+        MsgBox "Table 'master' not found."
+        Exit Sub
+    End If
+
+    ' Count the number of rows with non-blank STATUS
+    statusCount = masterWS.Range("T2").value
+    If IsNumeric(statusCount) = False Or statusCount < 1 Then
+        MsgBox "Invalid status count."
+        Exit Sub
+    End If
+    MsgBox "There are " & statusCount & " rows to hold..."
+
+    ' Create a dictionary to store unique keys
+    Set uniqueKeys = CreateObject("Scripting.Dictionary")
+
+    ' Initialize delete counter
+    deleteCount = 0
+
+    ' First loop: Build the dictionary for rows where STATUS is not empty
+    masterRowCount = masterTbl.ListRows.Count
+    MsgBox masterRowCount
+    For i = 1 To masterTbl.ListRows.Count
+        Set masterRow = masterTbl.ListRows(i)
+
+' Create the concatenated string for duplicate check, replacing blank cells with "NULL" and trimming whitespace
+        checkString = Nz(Trim(masterRow.Range(1, 1).value), "NULL") & Nz(Trim(masterRow.Range(1, 2).value), "NULL") & Nz(Trim(masterRow.Range(1, 5).value), "NULL") & _
+                      Nz(Trim(masterRow.Range(1, 6).value), "NULL") & Nz(Trim(masterRow.Range(1, 7).value), "NULL") & Nz(Trim(masterRow.Range(1, 8).value), "NULL") & _
+                      Nz(Trim(masterRow.Range(1, 10).value), "NULL") & Nz(Trim(masterRow.Range(1, 11).value), "NULL")
+
+        Debug.Print i & ": " & checkString
+
+        ' Add the key to the dictionary for existing rows with non-empty STATUS
+        If masterRow.Range(1, 13).value <> "" Then
+            If Not uniqueKeys.exists(checkString) Then
+                uniqueKeys.Add checkString, True
+            End If
+        End If
+    Next i
+
+    ' Second loop: Check the new rows with empty STATUS against the dictionary
+    For j = masterTbl.ListRows.Count To 1 Step -1
+        Set masterRow = masterTbl.ListRows(j)
+
+        ' Create the concatenated string for duplicate check, replacing blank cells with "NULL"
+        checkString = Nz(Trim(masterRow.Range(1, 1).value), "NULL") & Nz(Trim(masterRow.Range(1, 2).value), "NULL") & Nz(Trim(masterRow.Range(1, 5).value), "NULL") & _
+                      Nz(Trim(masterRow.Range(1, 6).value), "NULL") & Nz(Trim(masterRow.Range(1, 7).value), "NULL") & Nz(Trim(masterRow.Range(1, 8).value), "NULL") & _
+                      Nz(Trim(masterRow.Range(1, 10).value), "NULL") & Nz(Trim(masterRow.Range(1, 11).value), "NULL")
+
+        Debug.Print masterTbl.ListRows.Count - j & ": " & checkString
+
+        ' Check if the row is new (STATUS = "")
+        If masterRow.Range(1, 13).value = "" Then
+            If uniqueKeys.exists(checkString) Then
+                ' If the key exists, delete the row
+                masterRow.Delete
+                deleteCount = deleteCount + 1
+            End If
+        End If
+    Next j
+
+    ' Display message box with the number of deleted rows
+    MsgBox deleteCount & " duplicate rows were deleted."
+
+End Sub
+
+' Helper function to replace blank cells with "NULL"
+Function Nz(value As Variant, Optional replaceValue As Variant = "NULL") As Variant
+    If IsEmpty(value) Or IsNull(value) Or value = "" Then
+        Nz = replaceValue
+    Else
+        Nz = value
+    End If
+End Function
+
+Sub updateInactiveOwners()
+
+    Dim masterWB As Workbook
+    Dim masterWS As Worksheet
+    Dim masterTbl As ListObject
+    Dim masterRow As ListRow
+    Dim staffWS As Worksheet
+    Dim staffTbl As ListObject
+    Dim ownerName As String
+    Dim staffStatus As String
+    Dim i As Long
+    Dim j As Long
+    Dim redirectCount As Long
+
+    ' Set workbook and worksheets
+    Set masterWB = ThisWorkbook
+    Set masterWS = masterWB.Sheets("Flag_Master")
+    Set staffWS = masterWB.Sheets("Staff_Key")
+
+    ' Set tables
+    Set masterTbl = masterWS.ListObjects("master")
+    Set staffTbl = staffWS.ListObjects("StaffKey")
+
+    ' Initialize redirect counter
+    redirectCount = 0
+
+    ' Loop through each row in the master table
+    For i = 1 To masterTbl.ListRows.Count
+        Set masterRow = masterTbl.ListRows(i)
+        
+        If masterRow.Range(1, 16).value <> "" Then
+            Exit For
+        End If
+        
+        
+        ownerName = masterRow.Range(1, 11).value ' OWNER is in column 11
+        
+        ' Loop through each row in the StaffKey table to find the owner
+        For j = 1 To staffTbl.ListRows.Count
+            Set staffRow = staffTbl.ListRows(j)
+            
+            If staffRow.Range(1, 1).value = ownerName Then
+                staffStatus = staffRow.Range(1, 4).value ' Status is in column 4
+                
+                ' Check if the staff status is not ACTIVE
+                If staffStatus <> "ACTIVE" Then
+                    masterRow.Range(1, 11).value = "Manager-x"
+                    redirectCount = redirectCount + 1
+                End If
+                
+                Exit For
+            End If
+        Next j
+    Next i
+
+    ' Display message box with the number of redirected rows
+    MsgBox redirectCount & " rows were redirected to the manager due to inactive staff."
+
+End Sub
+
+Sub updateStatus()
+
+    Dim masterWB As Workbook
+    Dim masterWS As Worksheet
+    Dim masterTbl As ListObject
+    Dim masterRow As ListRow
+    Dim i As Long
+    Dim autoDischarge As String
+    Dim flag As String
+    Dim owner As String
+
+    ' Set workbook and worksheet
+    Set masterWB = ThisWorkbook
+    Set masterWS = masterWB.Sheets("Flag_Master")
+
+    ' Set table
+    Set masterTbl = masterWS.ListObjects("master")
+
+    ' Loop through each row in the master table
+    For i = 1 To masterTbl.ListRows.Count
+        Set masterRow = masterTbl.ListRows(i)
+        
+        If masterRow.Range(1, 15).value <> "" Then
+            Exit For
+        End If
+        
+        If masterRow.Range(1, 16).value <> "" Then
+            Exit For
+        End If
+        
+        ' Get values from relevant columns
+        autoDischarge = masterRow.Range(1, 5).value ' Column 5: Auto Discharge
+        flag = masterRow.Range(1, 10).value ' Column 10: No Flag
+        owner = masterRow.Range(1, 11).value ' Column 11: Owner
+        
+        ' Determine the STATUS
+        If masterRow.Range(1, 13).value = "" Then
+            If autoDischarge = "" And flag = "No Flag" Then
+                masterRow.Range(1, 13).value = "Hold"
+                masterRow.Range(1, 14).value = Now
+            ElseIf owner = "Manager" Or owner = "Manager-x" Then
+                masterRow.Range(1, 13).value = "Stay"
+                masterRow.Range(1, 14).value = Now
+            Else
+                masterRow.Range(1, 13).value = "Send"
+                masterRow.Range(1, 14).value = Now
+            End If
+        End If
+    Next i
+
+End Sub
+
+Sub removeOldHoldRows()
+
+    Dim masterWB As Workbook
+    Dim masterWS As Worksheet
+    Dim masterTbl As ListObject
+    Dim masterRow As ListRow
+    Dim checkString1, checkString2 As String
+    Dim uniqueKeyz As Object
+    Dim i As Long
+    Dim deleteholdCount As Long
+
+    ' Set workbook and worksheet
+    Set masterWB = ThisWorkbook
+    Set masterWS = masterWB.Sheets("Flag_Master")
+    deleteholdCount = 0
+
+    ' Set table
+    Set masterTbl = masterWS.ListObjects("master")
+
+    ' Create a dictionary to store unique keys
+    Set uniqueKeyz = CreateObject("Scripting.Dictionary")
+
+    ' First loop: Build the dictionary for rows where Column-5 <> "" AND Column-10 = "No Flag" AND STATUS = "Send"
+    For i = masterTbl.ListRows.Count To 1 Step -1
+        Set masterRow = masterTbl.ListRows(i)
+        
+        If masterRow.Range(1, 5).value <> "" And masterRow.Range(1, 10).value = "No Flag" And masterRow.Range(1, 13).value = "Send" Then
+            ' Create the concatenated string for duplicate check, excluding Column-5
+            checkString1 = masterRow.Range(1, 1).value & masterRow.Range(1, 2).value & masterRow.Range(1, 6).value & _
+                          masterRow.Range(1, 7).value & masterRow.Range(1, 8).value & masterRow.Range(1, 10).value & _
+                          masterRow.Range(1, 11).value
+                          
+            
+            ' Add the key to the dictionary
+            If Not uniqueKeyz.exists(checkString1) Then
+                uniqueKeyz.Add checkString1, True
+                
+            End If
+        End If
+    Next i
+
+    ' Second loop: Check the rows where STATUS = "Hold" against the dictionary
+    For i = masterTbl.ListRows.Count To 1 Step -1
+        Set masterRow = masterTbl.ListRows(i)
+        
+        If masterRow.Range(1, 13).value = "Hold" Then
+        
+            ' Create the concatenated string for duplicate check, excluding Column-5
+            checkString2 = masterRow.Range(1, 1).value & masterRow.Range(1, 2).value & masterRow.Range(1, 6).value & _
+                          masterRow.Range(1, 7).value & masterRow.Range(1, 8).value & masterRow.Range(1, 10).value & _
+                          masterRow.Range(1, 11).value
+            
+            ' Check if the key exists in the dictionary
+            If uniqueKeyz.exists(checkString2) Then
+                ' If the key exists, delete the row
+                masterRow.Delete
+                deleteholdCount = deleteholdCount + 1
+            End If
+        End If
+    Next i
+    
+    If deleteholdCount > 0 Then
+    MsgBox deleteholdCount & " Held rows moved to Send status"
+    End If
+
+End Sub
+
+Sub markResolvedFINs()
+
+    Dim masterWB As Workbook
+    Dim masterWS As Worksheet
+    Dim masterTbl As ListObject
+    Dim masterRow As ListRow
+    Dim sourceWB As Workbook
+    Dim sourceWS As Worksheet
+    Dim sourceTbl As ListObject
+    Dim sourceRow As ListRow
+    Dim fin As String
+    Dim finExists As Boolean
+    Dim i As Long
+    Dim j As Long
+    Dim resolvedCount As Long
+    Dim newFileName As String
+    Dim oldFileName As String
+    Dim currentDate As String
+    Dim runCount As Long
+
+    ' Set workbooks and worksheets
+    Set masterWB = ThisWorkbook
+    Set masterWS = masterWB.Sheets("Flag_Master")
+    Set sourceWB = Workbooks("POC_Audit_Advanced_2025.xlsx")
+    Set sourceWS = sourceWB.Worksheets(3)
+
+    ' Set tables
+    Set masterTbl = masterWS.ListObjects("master")
+    Set sourceTbl = sourceWS.ListObjects("main")
+    runCount = masterWS.Range("R2").value
+    
+    masterWS.Range("R2").value = runCount + 1
+    
+If runCount = 0 Then
+
+    'For initial run, we can skip the 'resolved' process - just need to rename and close the source file
+    ' Append the source file name with "_done_" and the current date
+    currentDate = Format(Date, "mm_dd_yyyy")
+    oldFileName = sourceWB.fullName
+    newFileName = Left(oldFileName, InStrRev(oldFileName, ".") - 1) & "_done_" & currentDate & ".xlsx"
+    
+    ' Save the source file with the new name
+    sourceWB.SaveAs newFileName
+    
+    ' Close the source file
+    sourceWB.Close SaveChanges:=False
+    
+    ' Delete the original source file
+    Kill oldFileName
+
+    Exit Sub
+End If
+
+' Initialize resolved counter
+resolvedCount = 0
+
+' Loop through each row in the master table
+For i = 1 To masterTbl.ListRows.Count
+    Set masterRow = masterTbl.ListRows(i)
+    
+    ' Skip rows based on conditions
+    If masterRow.Range(1, 15).value <> "" Or masterRow.Range(1, 16).value <> "" Then
+        GoTo nextI
+    End If
+    
+    fin = masterRow.Range(1, 1).value ' FIN is in column 2
+    
+    ' Initialize finExists flag
+    finExists = False
+    
+    ' Loop through each row in the source table to check if the FIN exists
+    For j = 1 To sourceTbl.ListRows.Count
+        Set sourceRow = sourceTbl.ListRows(j)
+        
+        If sourceRow.Range(1, 2).value = fin Then
+            finExists = True
+            Exit For
+        End If
+    Next j
+    
+    ' If the FIN does not exist in the source table, mark it as resolved
+    If Not finExists Then
+        masterRow.Range(1, 16).value = "X" ' Mark as resolved in column 16
+        resolvedCount = resolvedCount + 1
+    End If
+    
+nextI:
+Next i
+
+    ' Display message box with the number of resolved rows
+    MsgBox resolvedCount & " rows were marked as resolved."
+
+    ' Append the source file name with "_done_" and the current date
+    currentDate = Format(Date, "mm_dd_yyyy")
+    oldFileName = sourceWB.fullName
+    newFileName = Left(oldFileName, InStrRev(oldFileName, ".") - 1) & "_done_" & currentDate & ".xlsx"
+    
+    ' Save the source file with the new name
+    sourceWB.SaveAs newFileName
+    
+    ' Close the source file
+    sourceWB.Close SaveChanges:=False
+    
+    ' Delete the original source file
+    Kill oldFileName
+
+    ' Navigate back to cell A1 of the Flag_Master sheet
+    masterWS.Activate
+    masterWS.Range("A1").Select
+
+End Sub
+
+Sub SendDistributionLists()
+    Dim masterWB As Workbook
+    Dim masterWS, template As Worksheet
+    Dim masterTbl As ListObject
+    Dim masterRow As ListRow
+    Dim staffWS As Worksheet
+    Dim staffTbl As ListObject
+    Dim ownerEmail, ownerName As String
+    Dim staffStatus As String
+    Dim i, j, lastRow As Long
+    Dim redirectCount As Long
+    Dim newSheet As Worksheet
+    Dim newWB As Workbook
+    Dim sendRange As Range
+    Dim outlookApp As Object
+    Dim outlookMail As Object
+    Dim tempFilePath As String
+    Dim tempFileName As String
+    Dim tempFileFullName As String
+    Dim defaultEmail As String
+    Dim isTesting As Boolean
+    Dim userChoice As String
+    Dim lastName As String
+    Dim hasSendRows As Boolean
+
+    ' Show the custom UserForm
+    Load UserForm1
+    UserForm1.Show
+    userChoice = UserForm1.Tag
+    Unload UserForm1
+    
+    If userChoice = "Cancel" Then
+        MsgBox "Process halted by user.", vbExclamation
+        Exit Sub
+    ElseIf userChoice = "Testing" Then
+        isTesting = True
+        defaultEmail = InputBox("Enter the default email address for testing:", "Default Email")
+        If defaultEmail = "" Then
+            MsgBox "No email address entered. Exiting process.", vbExclamation
+            Exit Sub
+        End If
+    Else
+        isTesting = False
+    End If
+
+    ' Set workbook and worksheets
+    Set masterWB = ThisWorkbook
+    Set masterWS = masterWB.Sheets("Flag_Master")
+    Set staffWS = masterWB.Sheets("Staff_Key")
+    Set templateWS = masterWB.Sheets("Send_Template")
+    ' Set tables
+    Set masterTbl = masterWS.ListObjects("master")
+    Set staffTbl = staffWS.ListObjects("StaffKey")
+
+    ' Initialize redirect counter
+    redirectCount = 0
+
+    ' Loop through each row in the StaffKey table
+    For i = 1 To staffTbl.ListRows.Count
+        ownerName = staffTbl.ListRows(i).Range(1, 1).value
+        staffStatus = staffTbl.ListRows(i).Range(1, 4).value
+        
+        ' Check if the staff status is ACTIVE
+        If staffStatus = "ACTIVE" Then
+            If isTesting Then
+                ownerEmail = defaultEmail
+            Else
+                ownerEmail = staffTbl.ListRows(i).Range(1, 3).value
+            End If
+            
+            ' Extract the left-most word from the owner's name
+            lastName = Split(ownerName, " ")(0)
+            '''''''''''''''''''''''''''''''''''
+            hasSendRows = False
+            
+            For Each masterRow In masterTbl.ListRows
+                If masterRow.Range(1, 11).value = ownerName And (masterRow.Range(1, 13).value = "Send" Or masterRow.Range(1, 13).value = "Sent") Then
+                    hasSendRows = True
+                    Exit For
+                End If
+            Next masterRow
+            
+            '''''''''''''''''''''''''''''''''''
+            If hasSendRows Then
+            
+            ' Create a new sheet from the Send_Template
+            templateWS.Copy After:=masterWB.Sheets(masterWB.Sheets.Count)
+            Set newSheet = masterWB.Sheets(masterWB.Sheets.Count)
+            newSheet.name = lastName
+            
+            ' Find and copy rows with STATUS = "Send" for the current owner
+            j = 2 ' Start copying to row 2
+            For Each masterRow In masterTbl.ListRows
+                If masterRow.Range(1, 11).value = ownerName And (masterRow.Range(1, 13).value = "Send" Or masterRow.Range(1, 13).value = "Sent") Then
+                    newSheet.Range("A" & j).value = masterRow.Range(1, 1).value
+                    newSheet.Range("B" & j).value = masterRow.Range(1, 2).value
+                    newSheet.Range("C" & j).value = masterRow.Range(1, 4).value
+                    newSheet.Range("D" & j).value = masterRow.Range(1, 5).value
+                    newSheet.Range("E" & j).value = masterRow.Range(1, 6).value
+                    newSheet.Range("F" & j).value = masterRow.Range(1, 7).value
+                    newSheet.Range("G" & j).value = masterRow.Range(1, 8).value
+                    newSheet.Range("H" & j).value = masterRow.Range(1, 9).value
+                    newSheet.Range("I" & j).value = masterRow.Range(1, 10).value
+                    j = j + 1
+                End If
+            Next masterRow
+            
+            Set sendRange = newSheet.Range("A1").CurrentRegion
+            newSheet.ListObjects.Add(xlSrcRange, sendRange, , xlYes).name = "OwnerList"
+            
+            ' Move the new sheet to a new workbook
+            newSheet.Copy
+            Set newWB = ActiveWorkbook
+            tempFileName = lastName & "_" & Format(Date, "yyyy-mm-dd") & ".xlsx"
+            tempFilePath = Environ("TEMP") & "\"
+            tempFileFullName = tempFilePath & tempFileName
+            newWB.SaveAs tempFileFullName
+            newWB.Close False
+            
+            Application.DisplayAlerts = False
+            newSheet.Delete
+            Application.DisplayAlerts = True
+            
+            ' Send the new workbook via Outlook
+            Set outlookApp = CreateObject("Outlook.Application")
+            Set outlookMail = outlookApp.CreateItem(0)
+            With outlookMail
+                .To = ownerEmail
+                .Subject = "Rehab Recurring-Encounter CleanUp Project"
+                .Body = "Dear Therapist...Please find your attached distribution list. Keeping in mind that no automated process is ever perfect, please reach out to me with any questions...and thank you for your help!"
+                .Attachments.Add tempFileFullName
+                .Send
+            End With
+            
+            ' Update the STATUS in the master table
+            For Each masterRow In masterTbl.ListRows
+                If masterRow.Range(1, 11).value = ownerName And (masterRow.Range(1, 13).value = "Send" Or masterRow.Range(1, 13).value = "Sent") Then
+                    masterRow.Range(1, 13).value = "Sent"
+                    masterRow.Range(1, 14).value = Now
+                End If
+            Next masterRow
+            
+            ' Delete the temporary file
+            Kill tempFileFullName
+            
+            End If
+            
+        End If
+    Next i
+    
+End Sub
