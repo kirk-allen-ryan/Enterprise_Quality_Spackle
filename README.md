@@ -16,12 +16,36 @@ Our HQ report writers are brilliant and hardworking, but they built a data-scien
 <img width="913" height="657" alt="image" src="https://github.com/user-attachments/assets/f08ebdc8-0161-4c1d-ab1b-a507eb1cb2c5" />
 
 
-* **The Complexity:** It featured **200 custom calculation variables** and **68 different formatting rules** (see [Calculation Examples](link-to-logic-file)).
-* **The Result:** A "monster" output (pic-4) so wide that it was impossible to view on a standard laptop. It relied on a legend of **RGB color-coded flags** that were too clunky to interpret quickly. 
-* **The Human Cost:** Managing the queues became a full-time job for the Rehab Manager. Because it was so complicated, no backup could be adequately trained, meaning revenue integrity stalled whenever the manager was away.
+* **The Complexity:**
+ 
+  - It featured **200 custom calculation variables...**
+<img width="801" height="655" alt="image" src="https://github.com/user-attachments/assets/72d021c5-f03b-4aff-8efc-aac33205532b" />
+
+---
+
+  - many of which added substantial **dimensional complexity** within themselves
+<img width="1080" height="411" alt="image" src="https://github.com/user-attachments/assets/bca63865-f004-43e6-bcf5-f15d8be2d52b" />
+
+---
+
+  - It featured **68 different formatting rules**
+<img width="550" height="396" alt="image" src="https://github.com/user-attachments/assets/baf08218-9ff1-4593-a425-410419880413" />
+
+---
+
+* **The Result:** A "monster" output 
+<img width="1870" height="738" alt="image" src="https://github.com/user-attachments/assets/be6d5cff-121a-43c9-b590-ccb432f97e07" />
+
+---
+
+* **The REAL Problem?**
+* A fundamental non-understanding of a Rehab Manager's day! She's not sitting in an office with a dual-monitor workstation - she's on the floor working with kids...and a 15" laptop
+<img width="1867" height="677" alt="image" src="https://github.com/user-attachments/assets/541f9170-6eae-430e-b95a-5888e18e99ec" />
+
+* **The Human Cost:** Managing the queues became almost a full-time job for the Rehab Manager. Revenue integrity stalled whenever the manager was away.
 
 ### 🛠️ The Solution: The 'Spackle' Strategy
-I realized that re-engineering the HQ report was too expensive and time-consuming. Instead, I used the tools at hand to get the data over the "last mile" to the customer.
+Re-engineering the HQ report would be too expensive and time-consuming. Not to mention the potential for hurt feelings. Instead, I used the tools at hand to get the data over the "last mile" to the customer.
 
 I wrote a **comprehensive VBA script** (available in this repo) that transformed this monster into a manageable workflow:
 1.  **Decoder Ring:** The script reads the HQ report and automatically decodes the RGB flags into plain English status updates.
@@ -48,13 +72,13 @@ I specialize in **Revenue Integrity** and **Operational Efficiency**. I don't ju
 
 
 
-<img width="801" height="655" alt="image" src="https://github.com/user-attachments/assets/72d021c5-f03b-4aff-8efc-aac33205532b" />
 
-<img width="550" height="396" alt="image" src="https://github.com/user-attachments/assets/baf08218-9ff1-4593-a425-410419880413" />
 
-<img width="1870" height="738" alt="image" src="https://github.com/user-attachments/assets/be6d5cff-121a-43c9-b590-ccb432f97e07" />
 
-<img width="1867" height="677" alt="image" src="https://github.com/user-attachments/assets/541f9170-6eae-430e-b95a-5888e18e99ec" />
+
+
+
+
 
 <img width="1591" height="600" alt="image" src="https://github.com/user-attachments/assets/7d35433c-0c3f-407b-ad2d-697e3a739d1c" />
 
