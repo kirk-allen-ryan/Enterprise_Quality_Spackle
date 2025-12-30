@@ -12,7 +12,10 @@ In any large organization, there is often a natural tension between HQ technical
 ### 🚩 The Problem: Enterprise Over-Engineering
 Our HQ report writers are brilliant and hardworking, but they built a data-science marvel that was a nightmare for end-users. 
 
-* **The Scale:** The report utilized multiple integrated queries to pull approximately **400 table elements** (as seen in the [data tree](pic-1-link)).
+* **The Scale:** The report utilized **[multiple integrated queries](https://github.com/kirk-allen-ryan/Enterprise_Quality_Spackle/blob/main/HQ_SQL_KRAKEN)** to pull approximately **400 table elements**
+<img width="913" height="657" alt="image" src="https://github.com/user-attachments/assets/f08ebdc8-0161-4c1d-ab1b-a507eb1cb2c5" />
+
+
 * **The Complexity:** It featured **200 custom calculation variables** and **68 different formatting rules** (see [Calculation Examples](link-to-logic-file)).
 * **The Result:** A "monster" output (pic-4) so wide that it was impossible to view on a standard laptop. It relied on a legend of **RGB color-coded flags** that were too clunky to interpret quickly. 
 * **The Human Cost:** Managing the queues became a full-time job for the Rehab Manager. Because it was so complicated, no backup could be adequately trained, meaning revenue integrity stalled whenever the manager was away.
@@ -43,7 +46,7 @@ By "spackling" the gap between the enterprise report and the staff, we achieved:
 ### Key Takeaway for Hiring Managers
 I specialize in **Revenue Integrity** and **Operational Efficiency**. I don't just write code; I identify where expensive enterprise tools are failing the end-user and build the "Spackle" necessary to ensure the data actually drives results.
 
-<img width="913" height="657" alt="image" src="https://github.com/user-attachments/assets/f08ebdc8-0161-4c1d-ab1b-a507eb1cb2c5" />
+
 
 <img width="801" height="655" alt="image" src="https://github.com/user-attachments/assets/72d021c5-f03b-4aff-8efc-aac33205532b" />
 
