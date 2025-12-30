@@ -44,13 +44,21 @@ Our HQ report writers are brilliant and hardworking, but they built a data-scien
 
 * **The Human Cost:** Managing the queues became almost a full-time job for the Rehab Manager. Revenue integrity stalled whenever the manager was away.
 
+---
+
 ### 🛠️ The Solution: The 'Spackle' Strategy
 Re-engineering the HQ report would be too expensive and time-consuming. Not to mention the potential for hurt feelings. Instead, I used the tools at hand to get the data over the "last mile" to the customer.
 
-I wrote a **comprehensive VBA script** (available in this repo) that transformed this monster into a manageable workflow:
+I wrote a [**comprehensive VBA script**](https://github.com/kirk-allen-ryan/Enterprise_Quality_Spackle/blob/main/KRAKEN_SLAYER_VBA) that transformed this monster into a manageable workflow:
 1.  **Decoder Ring:** The script reads the HQ report and automatically decodes the RGB flags into plain English status updates.
+   <img width="780" height="227" alt="image" src="https://github.com/user-attachments/assets/d2471a24-3ac9-424c-b9ee-c39f2c53772b" />
+
 2.  **Automated Distribution:** Instead of one person manually sorting rows, the script parses the data and distributes individual queues to the **20+ therapists** via Outlook.
 3.  **Revenue Integrity Master DB:** The script maintains a master database to track escalated problems and ensure that duplicate alerts aren't re-sent, preventing "notification fatigue."
+<img width="1591" height="600" alt="image" src="https://github.com/user-attachments/assets/7d35433c-0c3f-407b-ad2d-697e3a739d1c" />
+
+---
+
 
 ### 📈 The "Home Run" (The Results)
 By "spackling" the gap between the enterprise report and the staff, we achieved:
@@ -58,17 +66,6 @@ By "spackling" the gap between the enterprise report and the staff, we achieved:
 * **Staff Accountability:** By putting the data directly in the hands of the therapists, the "singles" were handled daily, keeping the billing queues clean.
 * **Sustainability:** The process is now decentralized and resilient, no longer relying on a single "expert" to interpret the Kraken.
 
----
-
-### 📂 Repository Technical Highlights
-* **[The Kraken SQL](SQL_file_link):** The original enterprise-level query (it's long!).
-* **[Variable Logic Markdown](Variables_link):** A sample of the 200+ custom calculations used to drive the report.
-* **[The Spackle VBA Script](VBA_link):** The core logic that decodes, tracks, and distributes the workload.
-
----
-
-### Key Takeaway for Hiring Managers
-I specialize in **Revenue Integrity** and **Operational Efficiency**. I don't just write code; I identify where expensive enterprise tools are failing the end-user and build the "Spackle" necessary to ensure the data actually drives results.
 
 
 
@@ -80,6 +77,6 @@ I specialize in **Revenue Integrity** and **Operational Efficiency**. I don't ju
 
 
 
-<img width="1591" height="600" alt="image" src="https://github.com/user-attachments/assets/7d35433c-0c3f-407b-ad2d-697e3a739d1c" />
+
 
 
