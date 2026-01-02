@@ -10,7 +10,15 @@
 In any large organization, there is often a natural tension between HQ technical teams and front-line managers. This is the story of **The Kraken**—an enterprise report so complex it nearly drowned the department it was meant to save.
 
 ### 🚩 The Problem: Enterprise Over-Engineering
-Our HQ report writers are brilliant and hardworking, but they built a data-science marvel that was a nightmare for end-users. 
+Our HQ report writers are brilliant and hardworking, but they built a data-science marvel that was a nightmare for end-users.
+
+* **The Backstory:** Physical therapy, Occupational therapy, and Speech-Language therapy billing can be a pain for hospitals that provide these service lines. No bills can go out without orders. No orders can be written without encounters. And therapy can involve dozens of sessions over many months of time, which means that single billing encounters can be stretched over dozens of in-person encounters. Orders become stale. Treatment objectives change. Complicated narratives must be coded and regulations complied with. Busy therapists often not afforded adequate admin time to track down the reasons for current claims that are snagged by problems that got missed a year ago. Review queues mushroom and revenue streams get clogged.
+
+*  **The Solution(?)** SQL scripting to scan EMR databases to gather relevent records, and logical calculations to flag specific combinations of conditions. A 3-person HQ reporting team took on the challenge on October-23, and 79 days later they published their masterpiece...
+
+<img width="512" height="435" alt="image" src="https://github.com/user-attachments/assets/7504edee-5f66-4996-8644-4eca8ef136be" />
+
+---
 
 * **The Scale:** The report utilized **[multiple integrated queries](https://github.com/kirk-allen-ryan/Enterprise_Quality_Spackle/blob/main/HQ_SQL_KRAKEN)** to pull approximately **400 table elements**
 <img width="913" height="657" alt="image" src="https://github.com/user-attachments/assets/f08ebdc8-0161-4c1d-ab1b-a507eb1cb2c5" />
@@ -33,14 +41,25 @@ Our HQ report writers are brilliant and hardworking, but they built a data-scien
 
 ---
 
-* **The Result:** A "monster" output 
-<img width="1870" height="738" alt="image" src="https://github.com/user-attachments/assets/be6d5cff-121a-43c9-b590-ccb432f97e07" />
+ - That combined a web of potential logical conditions into a single flagging rubric with an amazing technicolor decoding legend at the upper right of the report
+
+<img width="641" height="516" alt="image" src="https://github.com/user-attachments/assets/f517b96c-bb0e-48cb-bccf-76de44bd1eb0" />
+
+---
+
+
+* **The Result:** A "monster" output - nicknamed The Kraken. It was genius! Except for one tiny problem...
+<img width="1877" height="750" alt="image" src="https://github.com/user-attachments/assets/9ca736b5-197e-4b43-a3fd-04873e5b2151" />
 
 ---
 
 * **The REAL Problem?**
-* A fundamental non-understanding of a Rehab Manager's day! She's not sitting in an office with a dual-monitor workstation - she's on the floor working with kids...and a 15" laptop
-<img width="1867" height="677" alt="image" src="https://github.com/user-attachments/assets/541f9170-6eae-430e-b95a-5888e18e99ec" />
+* A fundamental non-understanding of a Rehab Manager's day! She's not sitting in an office with a dual-monitor workstation - she's on the floor working with kids...and a 15" laptop. By forcing the output into a single, wide-framed table, it was impossilbe for the constantly-moving laptop user to view all the columns they needed in a single frame. They needed a note pad to jot down dates, names, and numbers as they scrolled side to side using the trackpad, and the tangled mess of merged cells, hidden rows, contorted column widths, and conditional formatting made it impractical for casual users to pull the report apart and distribute it across the team...
+<img width="1859" height="737" alt="image" src="https://github.com/user-attachments/assets/86769b7e-b482-4101-ab6d-65c50ecfe73d" />
+
+
+---
+
 
 * **The Human Cost:** Managing the queues became almost a full-time job for the Rehab Manager. Revenue integrity stalled whenever the manager was away.
 
@@ -56,7 +75,7 @@ I wrote a [**comprehensive VBA script**](https://github.com/kirk-allen-ryan/Ente
 2.  **Automated Distribution:** Instead of one person manually sorting rows, the script parses the data and distributes individual queues to the **20+ therapists** via Outlook.
    <img width="1519" height="203" alt="image" src="https://github.com/user-attachments/assets/ade0af23-14ba-42be-8827-dc48f631c301" />
 
-3.  **Revenue Integrity Master DB:** The script maintains a master database to track escalated problems and ensure that duplicate alerts aren't re-sent, preventing "notification fatigue."
+3.  **Revenue Integrity Master DB:** The script maintains a master database to track escalated problems and ensure that duplicate alerts aren't re-sent, preventing "notification fatigue." Specific problems that had been previously combined into compounded formatting rules could be atomized and resolved by specific type, unlocking the efficiency of batching and sprints. The slow trickle of desireable outcomes soon became a flood. A corporate "clean-up" directive that took other sites months to complete was accomplished in less than a week...
 <img width="1591" height="600" alt="image" src="https://github.com/user-attachments/assets/7d35433c-0c3f-407b-ad2d-697e3a739d1c" />
 
 ---
