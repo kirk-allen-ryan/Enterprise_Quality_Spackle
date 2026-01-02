@@ -41,7 +41,7 @@ Our HQ report writers are brilliant and hardworking, but they built a data-scien
 
 ---
 
- - That combined a web of potential logical conditions into a single flagging rubric with an amazing technicolor decoding legend at the upper right of the report
+ - That combined a web of potential logical conditions into a single flagging rubric with an amazing technicolor decoding legend that dominated the upper-left of the report
 
 <img width="641" height="516" alt="image" src="https://github.com/user-attachments/assets/f517b96c-bb0e-48cb-bccf-76de44bd1eb0" />
 
