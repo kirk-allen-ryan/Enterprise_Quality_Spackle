@@ -88,7 +88,7 @@ By "spackling" the gap between the enterprise report and the staff, we achieved:
 * **Sustainability:** The process is now decentralized and resilient, no longer relying on a single "expert" to interpret the Kraken.
 
 ## 🛠️ Case Study: The 'Hidden' Swiss Army Knife
-**Stop Buying Licenses for Single-Use Tools When You Already Own the Solution**
+**Stop Buying Licenses for Single-Use Tools [When You Already Own the Solution**](https://youtu.be/hAxeOlXy8NQ)  (Link redirects to YouTube)
 
 Modern enterprises are often "Tool Rich but Solution Poor." Many organizations pay for expensive, single-use software licenses to bridge operational gaps that their existing desktop tools could already handle—if they had someone with the creativity to connect them.
 
