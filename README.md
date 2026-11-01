@@ -102,8 +102,320 @@ Modern enterprises are often "Tool Rich but Solution Poor." Many organizations p
 
 
 
+### changes below
 
 
+# Enterprise_Quality_Spackle 🛠️
+
+> **The Philosophy:** Four singles can equal a home run. Small, targeted improvements are often easier to adopt, more sustainable, and more valuable than a large project that nobody uses.
+
+## Executive Summary
+
+This case study describes a last-mile workflow solution for a technically sophisticated but difficult-to-use rehabilitation billing report.
+
+The original enterprise report combined multiple SQL queries, approximately 400 data elements, 200 calculation variables, and 68 formatting rules. It was analytically powerful but difficult to use in a mobile, frontline rehabilitation workflow.
+
+I built a VBA-based workflow that:
+
+- Translated complex visual flags into plain-language status updates
+- Distributed individualized work queues to more than 20 therapists
+- Maintained a tracking database for escalated issues
+- Prevented duplicate notifications
+- Reduced dependence on a single manager
+- Helped complete a site-wide cleanup effort in less than one week
+
+The project illustrates a recurring informatics principle:
+
+> A technically excellent system can still fail if it does not fit the user’s physical environment, workflow, or cognitive load.
+
+---
+
+## Case Study: The Kraken
+
+### VBA as Middleware: Taming a Complex Enterprise Report
+
+In large organizations, enterprise reporting teams and frontline users often work under very different conditions. A report can be technically sophisticated and analytically comprehensive while still being difficult to use in daily operations.
+
+This is the story of **The Kraken**—a complex rehabilitation billing report that contained valuable information but placed too much interpretive and administrative burden on the end user.
+
+## The Problem: Complex Data, Difficult Workflow
+
+Physical, occupational, and speech-language therapy billing can create significant operational challenges for hospitals providing these services.
+
+Claims may require:
+
+- Appropriate orders
+- Active encounters
+- Current treatment objectives
+- Accurate documentation
+- Regulatory compliance
+- Consistent follow-up across many therapy sessions
+
+Therapy episodes can extend across dozens of encounters over many months. Orders may become stale, treatment objectives may change, and unresolved documentation problems can remain hidden until a claim is delayed or rejected.
+
+Frontline therapists and rehabilitation managers may also have limited administrative time to investigate these problems. As unresolved items accumulate, review queues grow and revenue-cycle work becomes increasingly difficult to manage.
+
+### The Original Enterprise Report
+
+A three-person headquarters reporting team developed a sophisticated report to identify potential problems in the rehabilitation billing workflow.
+
+The report used:
+
+- Multiple integrated SQL queries
+- Approximately 400 data elements
+- Approximately 200 custom calculation variables
+- Sixty-eight formatting rules
+- Numerous conditional combinations
+- Color-coded flags and a detailed visual legend
+
+The report was technically ambitious and contained substantial analytical value.
+
+However, its structure made it difficult for frontline users to interpret and distribute the information efficiently.
+
+![Example of the enterprise report](https://github.com/user-attachments/assets/7504edee-5f66-4996-8644-4eca8ef136be)
+
+## The Scale
+
+The report used multiple integrated queries to retrieve and combine approximately 400 table elements.
+
+[View the integrated SQL queries](https://github.com/kirk-allen-ryan/Enterprise_Quality_Spackle/blob/main/HQ_SQL_KRAKEN)
+
+![Integrated query structure](https://github.com/user-attachments/assets/f08ebdc8-0161-4c1d-ab1b-a507eb1cb2c5)
+
+## The Complexity
+
+The report included approximately 200 custom calculation variables.
+
+![Custom calculation variables](https://github.com/user-attachments/assets/72d021c5-f03b-4aff-8efc-aac33205532b)
+
+Many of those variables also contained substantial internal logic and dimensional complexity.
+
+![Calculation complexity](https://github.com/user-attachments/assets/bca63865-f004-43e6-bcf5-f15d8be2d52b)
+
+The report also included 68 formatting rules that combined multiple logical conditions into a visual flagging system.
+
+![Formatting rules](https://github.com/user-attachments/assets/baf08218-9ff1-4593-a425-410419880413)
+
+The resulting report used a detailed color-coded legend to communicate the meaning of its many status conditions.
+
+![Flagging legend](https://github.com/user-attachments/assets/f517b96c-bb0e-48cb-bccf-76de44bd1eb0)
+
+## The Usability Problem
+
+The resulting output was technically comprehensive but difficult to use in the actual rehabilitation workflow.
+
+The primary user was not working from a fixed office workstation with multiple monitors. The manager was frequently moving through clinical areas and working from a 15-inch laptop.
+
+The wide-format report required the user to:
+
+- Scroll horizontally to locate relevant columns
+- Keep track of dates, names, and numbers manually
+- Interpret complex color-coded conditions
+- Navigate merged cells and hidden rows
+- Work around inconsistent column widths
+- Separate relevant items for distribution to individual therapists
+
+![Complex report output](https://github.com/user-attachments/assets/9ca736b5-197e-4b43-a3fd-04873e5b2151)
+
+The problem was not a lack of information. The problem was that the information was not presented in a form that matched the user’s physical environment or daily workflow.
+
+![Frontline usability challenge](https://github.com/user-attachments/assets/86769b7e-b482-4101-ab6d-65c50ecfe73d)
+
+## The Operational Cost
+
+Managing the queues became a substantial recurring responsibility for the rehabilitation manager.
+
+This created several risks:
+
+- Work remained concentrated with one person
+- Revenue-integrity activity slowed when the manager was unavailable
+- Therapists did not always receive actionable information directly
+- Duplicate alerts could contribute to notification fatigue
+- A technically valuable report was underused because it required too much manual interpretation
+
+Re-engineering the enterprise report would have required significant time, coordination, and cost. A lightweight last-mile solution offered a faster path to operational value.
+
+---
+
+## The Solution: The Spackle Strategy
+
+Rather than replace the enterprise report, I built a workflow layer that translated its output into a more usable process.
+
+The solution used existing tools:
+
+- VBA
+- Excel
+- Outlook
+- SQL-generated report data
+- A relational tracking database
+
+The goal was not to compete with the enterprise reporting system. The goal was to carry its information across the last mile to the people responsible for acting on it.
+
+[View the VBA workflow](https://github.com/kirk-allen-ryan/Enterprise_Quality_Spackle/blob/main/KRAKEN_SLAYER_VBA)
+
+## Technical Architecture
+
+- **Input:** Enterprise SQL report exported to Excel
+- **Processing:** VBA reads report rows, evaluates status flags, and translates formatting logic
+- **Translation:** Complex visual conditions are converted into plain-language status messages
+- **Distribution:** Individualized work queues are prepared and distributed through Outlook
+- **Tracking:** A master database records escalated issues and suppresses duplicate notifications
+- **Users:** Rehabilitation manager and more than 20 therapists
+- **Software environment:** Existing enterprise tools, with no additional software licensing required for the workflow
+
+### 1. Plain-Language Translation
+
+The VBA process reads the report’s color-coded flags and translates them into actionable status updates.
+
+This removes the need for each user to interpret the report’s underlying formatting logic independently.
+
+![Plain-language status translation](https://github.com/user-attachments/assets/d2471a24-3ac9-424c-b9ee-c39f2c53772b)
+
+### 2. Automated Distribution
+
+Instead of requiring one manager to manually sort and distribute rows, the process creates individualized work queues for more than 20 therapists and distributes them through Outlook.
+
+![Automated distribution](https://github.com/user-attachments/assets/ade0af23-14ba-42eb-8827-dc48f631c301)
+
+### 3. Revenue-Integrity Tracking
+
+The workflow maintains a master database of escalated problems.
+
+This allows the process to:
+
+- Track unresolved issues
+- Prevent duplicate alerts
+- Reduce notification fatigue
+- Separate previously combined problem types
+- Support targeted batching and resolution sprints
+- Preserve continuity when the primary manager is unavailable
+
+![Revenue-integrity tracking database](https://github.com/user-attachments/assets/7d35433c-0c3f-407b-ad2d-697e3a739d1c)
+
+---
+
+## Results
+
+By adding a workflow layer between the enterprise report and frontline staff, the project produced several operational improvements.
+
+### Manager Capacity
+
+The rehabilitation manager reported approximately three times the available capacity for patient appointments after queue-management responsibilities were reduced.
+
+### Staff Accountability
+
+Actionable information was delivered directly to the therapists responsible for resolving the underlying issues.
+
+This allowed smaller items to be handled continuously rather than accumulating in a centralized queue.
+
+### Faster Cleanup
+
+A corporate cleanup directive that had taken other sites months to complete was completed at this site in less than one week.
+
+### Sustainability
+
+The process became less dependent on a single expert who understood how to interpret and distribute the original report.
+
+The workflow was more decentralized, repeatable, and resilient.
+
+---
+
+## Key Informatics Lessons
+
+### 1. Technical sophistication is not the same as usability
+
+A report can contain excellent data and logic while still failing to support the user’s actual workflow.
+
+### 2. Last-mile design matters
+
+The final step between data production and user action can determine whether an analytical system creates value.
+
+### 3. Workflow fit is a technical requirement
+
+A solution must account for:
+
+- The user’s physical environment
+- Screen size and mobility
+- Available administrative time
+- Cognitive load
+- Distribution responsibilities
+- The frequency of required action
+
+### 4. Small interventions can produce large operational gains
+
+A targeted workflow layer can sometimes unlock value from an existing enterprise system without replacing the underlying platform.
+
+### 5. Decentralization improves resilience
+
+When actionable work is distributed to the people responsible for resolving it, the process becomes less dependent on a single manager or subject-matter expert.
+
+---
+
+## Case Study: The Hidden Swiss Army Knife
+
+### Stop Buying Single-Use Tools When Existing Tools Can Do the Work
+
+[Watch the related video](https://youtu.be/u3vxyO36KzA)
+
+Modern enterprises are often **tool-rich but solution-poor**. Organizations may purchase expensive middleware or project-management platforms to address integration problems that existing desktop and open-source tools could solve with the right design.
+
+Many teams already have capable tools available, including:
+
+- Excel and VBA
+- Power Query
+- SQL
+- Python
+- Open-source data and computing tools
+
+The challenge is often not the absence of technology. It is the absence of someone who can connect the tools to the workflow.
+
+## The Spackle Approach
+
+I specialize in identifying practical gaps between existing systems and frontline needs.
+
+Rather than automatically introducing another platform, I evaluate whether the current environment can be extended through:
+
+- VBA automation
+- Power Query transformations
+- SQL reporting
+- Python-based analysis
+- Relational tracking databases
+- Lightweight workflow interfaces
+- Open-source tools where appropriate
+
+The objective is to avoid unnecessary software-license costs while making the existing technology stack more useful, integrated, and sustainable.
+
+> **The Value Proposition:** I do not simply solve technical problems. I solve workflow and budget problems by helping organizations get more value from tools they already own.
+
+---
+
+## Privacy and Security
+
+This repository does not contain patient-identifiable information, production credentials, or unrestricted production database extracts.
+
+Screenshots, examples, and demonstrations have been redacted, simulated, or recreated for portfolio purposes where necessary.
+
+Any production implementation should be reviewed according to applicable organizational privacy, security, data-governance, and change-management requirements.
+
+---
+
+## Repository Contents
+
+- [Enterprise SQL query examples](https://github.com/kirk-allen-ryan/Enterprise_Quality_Spackle/blob/main/HQ_SQL_KRAKEN)
+- [VBA workflow automation](https://github.com/kirk-allen-ryan/Enterprise_Quality_Spackle/blob/main/KRAKEN_SLAYER_VBA)
+- Supporting screenshots and workflow documentation
+- Case-study narrative and implementation notes
+
+---
+
+## Final Takeaway
+
+The most valuable solution is not always the largest or most technically elaborate one.
+
+Sometimes the best intervention is a carefully designed layer between a powerful enterprise system and the people who need to use its output.
+
+**The Kraken produced the information.  
+The Spackle made the information usable.**
 
 
 
